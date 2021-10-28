@@ -44,10 +44,13 @@ public class LRUCache<K,V> implements CacheInterface<K, V>{
         
     }
 
+    /**
+     * Method to return initial LRUCache size.
+     * @return Integer representing initial pre-defined size.
+     */
     @Override
     public int getSize() {
-        // TODO Auto-generated method stub
-        return 0;
+        return this.initialSize;
     }
 
     @Override
