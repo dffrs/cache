@@ -5,7 +5,7 @@ package com.dffrs.memory.inteface;
  */
 public interface CacheInterface<K, V> {
     public V get(K key);
-    public void addElement(K key, V element);
+    public boolean addElement(K key, V element);
     public void removeElement(K key);
     public int getSize();
     public void clearCache();

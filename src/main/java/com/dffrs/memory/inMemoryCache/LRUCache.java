@@ -19,6 +19,16 @@ public class LRUCache<K,V> implements CacheInterface<K, V>{
         this.valueStoringList = new LinkedList<V>();
     }
 
+    private boolean cacheMissAdd(K key, V element) {
+        //TODO: Implement
+        return false;
+    }
+
+    private boolean cacheHitAdd(K key, V element) {
+        //TODO: Implement
+        return false;
+    }
+
     /**
      * Method to return Value V based on K key given as argument. If the map does not contain any traces of that key
      * it returns null.
@@ -29,13 +39,21 @@ public class LRUCache<K,V> implements CacheInterface<K, V>{
      */
     @Override
     public V get(K key) {
-        return this.keyStoringMap.get(key);
+        if(!isEmpty()){
+            return this.keyStoringMap.get(key);
+        }
+        return null;
     }
 
     @Override
-    public void addElement(K key, V element) {
-        // TODO Auto-generated method stub
-        
+    public boolean addElement(K key, V element) {
+        if(key == null || element == null)
+            throw new NullPointerException("Error: Null references are not allowed.\n");
+        if(this.keyStoringMap.containsKey(key)){
+            return cacheHitAdd(key, element);
+        }else{
+            return cacheMissAdd(key, element);
+        }
     }
 
     @Override
@@ -45,12 +63,12 @@ public class LRUCache<K,V> implements CacheInterface<K, V>{
     }
 
     /**
-     * Method to return initial LRUCache size.
-     * @return Integer representing initial pre-defined size.
+     * Method to return actual LRUCache size.
+     * @return Integer representing number of elements kept by the LRUCache.
      */
     @Override
     public int getSize() {
-        return this.initialSize;
+        return this.initialSize - (this.initialSize - this.keyStoringMap.size());
     }
 
     @Override
