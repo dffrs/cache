@@ -3,6 +3,7 @@ package com.dffrs.memory.inMemoryCache;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
 import com.dffrs.memory.inteface.CacheInterface;
@@ -10,22 +11,37 @@ import com.dffrs.memory.inteface.CacheInterface;
 public class LRUCache<K,V> implements CacheInterface<K, V>{
 
     private final int initialSize;
-    private Map<K, V> keyStoringMap;
+    private Map<K, Integer> keyStoringMap;
     private List<V> valueStoringList;
 
     public LRUCache(int size){
         this.initialSize = size;
-        this.keyStoringMap = new HashMap<K, V>();
+        this.keyStoringMap = new HashMap<K, Integer>();
         this.valueStoringList = new LinkedList<V>();
     }
 
+    /**
+     * Method to cache an item when a miss search occured. If an item was not present in {@link #keyStoringMap}, 
+     * it will be added to {@link #valueStoringList} and {@link #keyStoringMap}, if there is still space for it.
+     * 
+     * @param key Used to add element to the {@link #keyStoringMap}.
+     * @param element to add.
+     * @return True if the element was added, False if cache is full.
+     */
     private boolean cacheMissAdd(K key, V element) {
-        //TODO: Implement
+        if(getSize() < this.initialSize){
+            ListIterator<V> itList = this.valueStoringList.listIterator();
+            itList.add(element);
+            this.keyStoringMap.put(key, itList.nextIndex() - 1);
+            return true;
+        }
         return false;
     }
 
     private boolean cacheHitAdd(K key, V element) {
-        //TODO: Implement
+        if(getSize() < this.initialSize){
+            
+        }
         return false;
     }
 
@@ -40,7 +56,7 @@ public class LRUCache<K,V> implements CacheInterface<K, V>{
     @Override
     public V get(K key) {
         if(!isEmpty()){
-            return this.keyStoringMap.get(key);
+            return this.valueStoringList.get(this.keyStoringMap.get(key));
         }
         return null;
     }
