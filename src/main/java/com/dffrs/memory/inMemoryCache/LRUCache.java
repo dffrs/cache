@@ -22,20 +22,15 @@ public final class LRUCache<K, V> implements CacheInterface<K, V> {
     /**
      * Method to cache an item when a miss search occured. If an item was not
      * present in {@link #keyStoringMap}, it will be added to
-     * {@link #valueStoringList} and {@link #keyStoringMap}, if there is still space
-     * for it.
+     * {@link #valueStoringList} and {@link #keyStoringMap}
      * 
      * @param key     Used to add element to the {@link #keyStoringMap}.
      * @param element To add.
      * @return True if the element was added, False if cache is full.
      */
-    private boolean cacheMissAdd(K key, V element) {
-        if (getSize() < this.initialSize) {
-            this.keyStoringMap.put(key, element);
-            this.valueStoringList.addFirst(element);
-            return true;
-        }
-        return false;
+    private void cacheMissAdd(K key, V element) {
+        this.keyStoringMap.put(key, element);
+        this.valueStoringList.addFirst(element);
     }
 
     /**
@@ -47,17 +42,18 @@ public final class LRUCache<K, V> implements CacheInterface<K, V> {
      * @param key     Used as reference for {@link #keyStoringMap} entry key.
      * @param element To update.
      * @return True if the element was updated.
-     * @throws IllegalAccessException
-     * @throws #{@link                IllegalAccessException}
      */
-    private boolean cacheHitAdd(K key, V element) throws IllegalAccessException {
+    private void cacheHitAdd(K key, V element) {
         V temp = this.keyStoringMap.get(key);
         this.valueStoringList.remove(temp);
-        if (getSize() < this.initialSize) {
-            this.valueStoringList.addFirst(temp);
-            return true;
-        }
-        throw new IllegalAccessException();
+        this.valueStoringList.addFirst(temp);
+    }
+
+    
+    private void evictionProtocol() {
+        if (isEmpty())
+            throw new IllegalStateException("ERROR: Cache is empty. Could not evict any item.\n");
+        this.keyStoringMap.values().remove(this.valueStoringList.removeLast());
     }
 
     /**
@@ -80,18 +76,21 @@ public final class LRUCache<K, V> implements CacheInterface<K, V> {
     public boolean addElement(K key, V element) {
         if (key == null || element == null)
             throw new NullPointerException("Error: Null references are not allowed.\n");
-        if (this.keyStoringMap.containsKey(key)) {
-            boolean temp = false;
-            try {
-                temp = cacheHitAdd(key, element);
-            } catch (IllegalAccessException e) {
-                System.err.println("ERROR: Element's reference lost when updating. Re-adding.\n");
-                addElement(key, element);
-            }
-            return temp;
-        } else {
-            return cacheMissAdd(key, element);
+
+        boolean confirmation = false;
+        if (getSize() >= this.initialSize) {
+            System.out.println("Cache is full. Evicting oldest element.\n");
+            evictionProtocol();
         }
+
+        if (this.keyStoringMap.containsKey(key)) {
+            cacheHitAdd(key, element);
+            confirmation = true;
+        } else {
+            cacheMissAdd(key, element);
+            confirmation = true;
+        }
+        return confirmation;
     }
 
     /**
@@ -126,12 +125,5 @@ public final class LRUCache<K, V> implements CacheInterface<K, V> {
     public void clearCache() {
         this.keyStoringMap.clear();
         this.valueStoringList.clear();
-    }
-
-    @Override
-    public void evictionProtocol() {
-        if(isEmpty())
-            throw new IllegalStateException("ERROR: Cache is empty. Could not evict any item.\n");
-        this.keyStoringMap.values().remove(this.valueStoringList.removeLast());
     }
 }

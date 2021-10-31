@@ -14,8 +14,6 @@ public interface CacheInterface<K, V> {
 
     public void clearCache();
 
-    public void evictionProtocol();
-
     public default boolean isEmpty() {
         return getSize() == 0;
     }
