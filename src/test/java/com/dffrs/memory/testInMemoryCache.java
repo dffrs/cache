@@ -1,4 +1,5 @@
 package com.dffrs.memory;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
@@ -63,15 +64,13 @@ public class testInMemoryCache {
         assertEquals(cache.getSize(), 0);
     }
 
-    // @Test
-    // public void evictionProtocolTest(){
-    //     for (int i = 0; i != MAX_ELEMENTS_FOR_THIS_TEST; i++){
-    //         cache.addElement(String.valueOf(i), String.valueOf(i).concat("element"));
-    //     }
+    @Test
+    public void addMultipleElementsUntilEvictionKicksIn() {
+        for (int i = 0; i != MAX_ELEMENTS_FOR_THIS_TEST * 2; i++) {
+            cache.addElement(String.valueOf(i), String.valueOf(i).concat("element"));
+        }
 
-    //     assertEquals(cache.get("0"), "0element");
-    //     cache.evictionProtocol();
-    //     assertEquals(cache.get("0"), null); // There is no entry for that key, so it should return null.
-    //     cache.clearCache();
-    // }
+        cache.addElement("new", "eviction should kick in");
+        assertEquals(cache.get("0"), null);// This element should not be present since is the least recently used.
+    }
 }
