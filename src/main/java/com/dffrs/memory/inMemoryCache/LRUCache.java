@@ -49,7 +49,12 @@ public final class LRUCache<K, V> implements CacheInterface<K, V> {
         this.valueStoringList.addFirst(temp);
     }
 
-    
+    /**
+     * Method responsible for removing elements from the cache, using a Least
+     * Recently Used (LRU) eviction method.
+     * 
+     * @throws IllegalStateException When cache is empty.
+     */
     private void evictionProtocol() {
         if (isEmpty())
             throw new IllegalStateException("ERROR: Cache is empty. Could not evict any item.\n");
@@ -72,6 +77,20 @@ public final class LRUCache<K, V> implements CacheInterface<K, V> {
         return null;
     }
 
+    /**
+     * Method responsible for adding elements to the cache. If it is full,
+     * {@link #evictionProtocol()} is called before adding a new item. If the cache
+     * already contains the new element to insert, it moves it's reference, inside
+     * {@link #valueStoringList}, to the first place, meaning it is, now, the latest
+     * accessed item. On the other hand, if {@link #keyStoringMap} does NOT contain
+     * any key for that element, it adds it to the first position by default (inside
+     * {@link #valueStoringList}).
+     * 
+     * @param key     Key used to reference the new item inside the cache.
+     * @param element Element to add.
+     * @return True if element is added, False otherwise (for some reason).
+     * @throws NullPointerException When either argument is a NULL reference.
+     */
     @Override
     public boolean addElement(K key, V element) {
         if (key == null || element == null)
