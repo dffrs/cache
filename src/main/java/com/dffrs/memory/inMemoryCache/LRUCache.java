@@ -1,53 +1,68 @@
 package com.dffrs.memory.inMemoryCache;
 
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 
 import com.dffrs.memory.inteface.CacheInterface;
 
-public class LRUCache<K,V> implements CacheInterface<K, V>{
+public final class LRUCache<K, V> implements CacheInterface<K, V> {
 
     private final int initialSize;
-    private Map<K, Integer> keyStoringMap;
-    private List<V> valueStoringList;
+    private Map<K, V> keyStoringMap;
+    private Deque<V> valueStoringList;
 
-    public LRUCache(int size){
+    public LRUCache(int size) {
         this.initialSize = size;
-        this.keyStoringMap = new HashMap<K, Integer>();
+        this.keyStoringMap = new HashMap<K, V>();
         this.valueStoringList = new LinkedList<V>();
     }
 
     /**
-     * Method to cache an item when a miss search occured. If an item was not present in {@link #keyStoringMap}, 
-     * it will be added to {@link #valueStoringList} and {@link #keyStoringMap}, if there is still space for it.
+     * Method to cache an item when a miss search occured. If an item was not
+     * present in {@link #keyStoringMap}, it will be added to
+     * {@link #valueStoringList} and {@link #keyStoringMap}, if there is still space
+     * for it.
      * 
-     * @param key Used to add element to the {@link #keyStoringMap}.
-     * @param element to add.
+     * @param key     Used to add element to the {@link #keyStoringMap}.
+     * @param element To add.
      * @return True if the element was added, False if cache is full.
      */
     private boolean cacheMissAdd(K key, V element) {
-        if(getSize() < this.initialSize){
-            ListIterator<V> itList = this.valueStoringList.listIterator();
-            itList.add(element);
-            this.keyStoringMap.put(key, itList.nextIndex() - 1);
+        if (getSize() < this.initialSize) {
+            this.keyStoringMap.put(key, element);
+            this.valueStoringList.addFirst(element);
             return true;
         }
         return false;
     }
 
-    private boolean cacheHitAdd(K key, V element) {
-        if(getSize() < this.initialSize){
-            
+    /**
+     * Method used when a cache hit occured. If {@link #keyStoringMap} already has
+     * an entry for this key, {@link #valueStoringList} updates this element's
+     * reference, passing it to the first position (of {@link #valueStoringList} ->
+     * where the latest accessed item is stored).
+     * 
+     * @param key     Used as reference for {@link #keyStoringMap} entry key.
+     * @param element To update.
+     * @return True if the element was updated.
+     * @throws IllegalAccessException
+     * @throws #{@link                IllegalAccessException}
+     */
+    private boolean cacheHitAdd(K key, V element) throws IllegalAccessException {
+        V temp = this.keyStoringMap.get(key);
+        this.valueStoringList.remove(temp);
+        if (getSize() < this.initialSize) {
+            this.valueStoringList.addFirst(temp);
+            return true;
         }
-        return false;
+        throw new IllegalAccessException();
     }
 
     /**
-     * Method to return Value V based on K key given as argument. If the map does not contain any traces of that key
-     * it returns null.
+     * Method to return Value V based on K key given as argument. If the map does
+     * not contain any traces of that key it returns null.
      * 
      * @param key K value specified to get the value associated with it.
      * @return V value.
@@ -55,31 +70,48 @@ public class LRUCache<K,V> implements CacheInterface<K, V>{
      */
     @Override
     public V get(K key) {
-        if(!isEmpty()){
-            return this.valueStoringList.get(this.keyStoringMap.get(key));
+        if (!isEmpty()) {
+            return this.keyStoringMap.get(key);
         }
         return null;
     }
 
     @Override
     public boolean addElement(K key, V element) {
-        if(key == null || element == null)
+        if (key == null || element == null)
             throw new NullPointerException("Error: Null references are not allowed.\n");
-        if(this.keyStoringMap.containsKey(key)){
-            return cacheHitAdd(key, element);
-        }else{
+        if (this.keyStoringMap.containsKey(key)) {
+            boolean temp = false;
+            try {
+                temp = cacheHitAdd(key, element);
+            } catch (IllegalAccessException e) {
+                System.err.println("ERROR: Element's reference lost when updating. Re-adding.\n");
+                addElement(key, element);
+            }
+            return temp;
+        } else {
             return cacheMissAdd(key, element);
         }
     }
 
+    /**
+     * Method to remove a specific element, passed as argument.
+     * 
+     * @param key K value used as reference to remove as specific item.
+     * @return True if removed succesfully, False otherwise or LRUCache is empty.
+     */
     @Override
-    public void removeElement(K key) {
-        // TODO Auto-generated method stub
-        
+    public boolean removeElement(K key) {
+        if (!isEmpty()) {
+            return this.valueStoringList.remove(this.keyStoringMap.get(key))
+                    && this.keyStoringMap.remove(key, this.keyStoringMap.get(key));
+        }
+        return false;
     }
 
     /**
      * Method to return actual LRUCache size.
+     * 
      * @return Integer representing number of elements kept by the LRUCache.
      */
     @Override
@@ -87,9 +119,12 @@ public class LRUCache<K,V> implements CacheInterface<K, V>{
         return this.initialSize - (this.initialSize - this.keyStoringMap.size());
     }
 
+    /**
+     * Method to remove all items inside this cache.
+     */
     @Override
     public void clearCache() {
-        // TODO Auto-generated method stub
-        
+        this.keyStoringMap.clear();
+        this.valueStoringList.clear();
     }
 }
