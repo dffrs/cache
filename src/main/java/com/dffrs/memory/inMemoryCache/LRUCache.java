@@ -127,4 +127,11 @@ public final class LRUCache<K, V> implements CacheInterface<K, V> {
         this.keyStoringMap.clear();
         this.valueStoringList.clear();
     }
+
+    @Override
+    public void evictionProtocol() {
+        if(isEmpty())
+            throw new IllegalStateException("ERROR: Cache is empty. Could not evict any item.\n");
+        this.keyStoringMap.values().remove(this.valueStoringList.removeLast());
+    }
 }

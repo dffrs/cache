@@ -1,5 +1,6 @@
 package com.dffrs.memory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import com.dffrs.memory.inMemoryCache.LRUCache;
 
@@ -60,5 +61,17 @@ public class testInMemoryCache {
         cache.removeElement(removable);
 
         assertEquals(cache.getSize(), 0);
+    }
+
+    @Test
+    public void evictionProtocolTest(){
+        for (int i = 0; i != MAX_ELEMENTS_FOR_THIS_TEST; i++){
+            cache.addElement(String.valueOf(i), String.valueOf(i).concat("element"));
+        }
+
+        assertEquals(cache.get("0"), "0element");
+        cache.evictionProtocol();
+        assertEquals(cache.get("0"), null); // There is no entry for that key, so it should return null.
+        cache.clearCache();
     }
 }
