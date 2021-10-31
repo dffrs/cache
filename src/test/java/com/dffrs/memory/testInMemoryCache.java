@@ -1,3 +1,4 @@
+package com.dffrs.memory;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.dffrs.memory.inMemoryCache.LRUCache;
