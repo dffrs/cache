@@ -48,12 +48,21 @@
     </dependency>
   </dependencies>
   <build>
+    <!--ADDED-->
+    <resources>
+        <resource>
+            <directory>JavaDocs</directory>
+        </resource>
+    </resources>
     <pluginManagement>
       <plugins>
         <!--ADDED-->
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-javadoc-plugin</artifactId>
+          <configuration>
+            <reportOutputDirectory>JavaDocs</reportOutputDirectory>
+          </configuration>
           <executions>
             <execution>
               <id>attach-javadocs</id>
