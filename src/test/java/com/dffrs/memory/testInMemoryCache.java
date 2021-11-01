@@ -78,21 +78,22 @@ public class testInMemoryCache {
     }
 
     @Test
-    public void addMultipleElementsThreadSafetyTest() {
+    public void addMultipleElementsThreadSafetyWithCacheMissTest() {
         int numThreads = 5;
         ArrayList<Thread> threads = new ArrayList<Thread>();
 
-        for(int numberOfRuns = 0; numberOfRuns != 10; numberOfRuns++){
+        for (int numberOfRuns = 0; numberOfRuns != 10; numberOfRuns++) {
 
             for (int i = 0; i != numThreads; i++) {
                 threads.add(new Thread() {
                     @Override
                     public void run() {
-                        cache.addElement(String.valueOf(Thread.currentThread().getId()), Thread.currentThread().getName());
+                        cache.addElement(String.valueOf(Thread.currentThread().getId()),
+                                Thread.currentThread().getName());
                     };
                 });
             }
-    
+
             threads.forEach(t -> t.start());
             threads.forEach(t -> {
                 try {
@@ -101,11 +102,43 @@ public class testInMemoryCache {
                     e.printStackTrace();
                 }
             });
-    
+
             assertEquals(numThreads, cache.getSize());
-    
+
             threads.forEach(t -> assertEquals(t.getName(), cache.get(String.valueOf(t.getId()))));
-    
+
+            cache.clearCache();
+            threads.clear();
+        }
+    }
+
+    @Test
+    public void addMultipleElementsThreadSafetyWithCacheHitTest() {
+        int numThreads = 200;
+        ArrayList<Thread> threads = new ArrayList<Thread>();
+
+        for (int numberOfRuns = 0; numberOfRuns != 100; numberOfRuns++) {
+
+            for (int i = 0; i != numThreads; i++) {
+                threads.add(new Thread() {
+                    @Override
+                    public void run() {
+                        cache.addElement(String.valueOf(Thread.currentThread().getId()),
+                                Thread.currentThread().getName());
+                        assertEquals(currentThread().getName(), cache.get(String.valueOf(currentThread().getId())));
+                    };
+                });
+            }
+
+            threads.forEach(t -> t.start());
+            threads.forEach(t -> {
+                try {
+                    t.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            });
+
             cache.clearCache();
             threads.clear();
         }
