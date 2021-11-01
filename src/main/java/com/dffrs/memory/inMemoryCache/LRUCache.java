@@ -4,6 +4,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.dffrs.memory.inteface.CacheInterface;
 
@@ -12,11 +13,31 @@ public final class LRUCache<K, V> implements CacheInterface<K, V> {
     private final int initialSize;
     private Map<K, V> keyStoringMap;
     private Deque<V> valueStoringList;
+    private ReentrantLock lock = new ReentrantLock();
 
     public LRUCache(int size) {
         this.initialSize = size;
         this.keyStoringMap = new HashMap<K, V>();
         this.valueStoringList = new LinkedList<V>();
+    }
+
+    /**
+     * Method that checks if an entry for a specefied key is present in
+     * {@link #keyStoringMap}. Used inside {@link #addElement(Object, Object)}
+     * method.
+     * 
+     * @param key Key used for item searching inside the cache.
+     * @return True if present, False otherwise.
+     */
+    private boolean cacheContains(K key) {
+        try {
+            lock.lock();
+
+            return this.keyStoringMap.containsKey(key);
+
+        } finally {
+            lock.unlock();
+        }
     }
 
     /**
@@ -29,8 +50,15 @@ public final class LRUCache<K, V> implements CacheInterface<K, V> {
      * @return True if the element was added, False if cache is full.
      */
     private void cacheMissAdd(K key, V element) {
-        this.keyStoringMap.put(key, element);
-        this.valueStoringList.addFirst(element);
+        try {
+            lock.lock();
+
+            this.keyStoringMap.put(key, element);
+            this.valueStoringList.addFirst(element);
+
+        } finally {
+            lock.unlock();
+        }
     }
 
     /**
@@ -44,9 +72,16 @@ public final class LRUCache<K, V> implements CacheInterface<K, V> {
      * @return True if the element was updated.
      */
     private void cacheHitAdd(K key, V element) {
-        V temp = this.keyStoringMap.get(key);
-        this.valueStoringList.remove(temp);
-        this.valueStoringList.addFirst(temp);
+        try {
+            lock.lock();
+
+            V temp = this.keyStoringMap.get(key);
+            this.valueStoringList.remove(temp);// This is not an O(1) method. Get another solution later.
+            this.valueStoringList.addFirst(temp);
+
+        } finally {
+            lock.unlock();
+        }
     }
 
     /**
@@ -58,7 +93,15 @@ public final class LRUCache<K, V> implements CacheInterface<K, V> {
     private void evictionProtocol() {
         if (isEmpty())
             throw new IllegalStateException("ERROR: Cache is empty. Could not evict any item.\n");
-        this.keyStoringMap.values().remove(this.valueStoringList.removeLast());
+
+        try {
+            lock.lock();
+
+            this.keyStoringMap.values().remove(this.valueStoringList.removeLast());
+
+        } finally {
+            lock.unlock();
+        }
     }
 
     /**
@@ -102,7 +145,7 @@ public final class LRUCache<K, V> implements CacheInterface<K, V> {
             evictionProtocol();
         }
 
-        if (this.keyStoringMap.containsKey(key)) {
+        if (cacheContains(key)) {
             cacheHitAdd(key, element);
             confirmation = true;
         } else {
@@ -120,9 +163,15 @@ public final class LRUCache<K, V> implements CacheInterface<K, V> {
      */
     @Override
     public boolean removeElement(K key) {
+
         if (!isEmpty()) {
-            return this.valueStoringList.remove(this.keyStoringMap.get(key))
-                    && this.keyStoringMap.remove(key, this.keyStoringMap.get(key));
+            try {
+                lock.lock();
+                return this.valueStoringList.remove(this.keyStoringMap.get(key))
+                        && this.keyStoringMap.remove(key, this.keyStoringMap.get(key));
+            } finally {
+                lock.unlock();
+            }
         }
         return false;
     }
@@ -134,7 +183,14 @@ public final class LRUCache<K, V> implements CacheInterface<K, V> {
      */
     @Override
     public int getSize() {
-        return this.initialSize - (this.initialSize - this.keyStoringMap.size());
+        try {
+            lock.lock();
+
+            return this.initialSize - (this.initialSize - this.keyStoringMap.size());
+
+        } finally {
+            lock.unlock();
+        }
     }
 
     /**
@@ -142,7 +198,14 @@ public final class LRUCache<K, V> implements CacheInterface<K, V> {
      */
     @Override
     public void clearCache() {
-        this.keyStoringMap.clear();
-        this.valueStoringList.clear();
+        try {
+            lock.lock();
+
+            this.keyStoringMap.clear();
+            this.valueStoringList.clear();
+
+        } finally {
+            lock.unlock();
+        }
     }
 }
