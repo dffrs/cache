@@ -8,6 +8,19 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.dffrs.memory.inteface.CacheInterface;
 
+/**
+ * Class implementing an "in memory" type cache. For that, it uses
+ * {@link #keyStoringMap}, to store elements, as they are inserted into the
+ * LRUCache itself. It has a pre-defined size (through {@link #LRUCache(int)}),
+ * and every time it reaches full capacity, with the help of
+ * {@link #valueStoringList} list, evicts the least recently used element.
+ * 
+ * All methods, beside {@link #removeElement(Object)} and
+ * {@link #cacheHitAdd(Object, Object)}, are O(1) time complexity operations
+ * (Future updates may improve those as well).
+ * 
+ * @author dffrs
+ */
 public final class LRUCache<K, V> implements CacheInterface<K, V> {
 
     private final int initialSize;
