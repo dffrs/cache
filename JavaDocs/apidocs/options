@@ -1,0 +1,24 @@
+-encoding
+'UTF-8'
+-protected
+-source
+'1.8'
+-sourcepath
+'/Users/danielrodrigues/Documents/Development/Visual Studio Code Workspace/cache/src/main/java'
+-author
+-bottom
+'Copyright &#169; 2021. All rights reserved.'
+-charset
+'UTF-8'
+-d
+'/Users/danielrodrigues/Documents/Development/Visual Studio Code Workspace/cache/JavaDocs/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'cache 1.0 API'
+-linkoffline
+'https://docs.oracle.com/javase/8/docs/api' '/Users/danielrodrigues/Documents/Development/Visual Studio Code Workspace/cache/target/javadoc-bundle-options'
+-use
+-version
+-windowtitle
+'cache 1.0 API'
